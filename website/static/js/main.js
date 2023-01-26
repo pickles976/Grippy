@@ -1,10 +1,19 @@
+/**
+ * This file is the testbed for single js solver implementations.
+ * If you want to see how a GA or Jacobian solver runs step-by-step then
+ * use this file.
+ */
+
 import * as THREE from 'three'
 import { MapControls } from 'https://unpkg.com/three@0.146.0/examples/jsm/controls/OrbitControls.js'
 import { GUI } from 'https://unpkg.com/three@0.146.0/examples/jsm/libs/lil-gui.module.min.js'
-import { IKSolver3D } from './Solver3D.js'
-import { mathToTHREE, rMat3D, tMat3D } from './Geometry.js'
-import { Arm3D } from './Arm3D.js'
-import { ArmJson } from './ArmJson.js'
+import { mathToTHREE, rMat3D, tMat3D } from './util/Geometry.js'
+import { Arm3D } from './util/Arm3D.js'
+import { ArmJson } from './util/ArmJson.js'
+import { CollisionProvider } from './util/CollisionProvider.js'
+
+import { WasmSolver } from "./solver/WasmSolver.js"
+import init from "../pkg/krust.js";
 
 const ORIGIN = math.matrix([
     [1, 0, 0, 0],
@@ -22,11 +31,15 @@ const z = 7
 
 let TARGET = math.multiply(math.multiply(math.multiply(tMat3D(x,y,z),rMat3D(xRot, 'x')), rMat3D(yRot, 'y')), rMat3D(zRot, 'z'))
 
-let RADII = [1, 4, 4, 4, 4, 2, 2]
-let AXES = ['z', 'y', 'y', 'y', 'y', 'x', 'z']
-let THETAS = [0, 0, 0, 0, 0, 0, 0]
+let LENGTHS = []
+let WIDTHS = []
+let HEIGHTS = []
+let AXES = []
+let THETAS = []
+let MIN_ANGLES = []
+let MAX_ANGLES = []
 
-let canvas, renderer, camera, scene, orbit, gui, armjson, editor
+let canvas, renderer, camera, scene, orbit, targetGUI, armGUI, armjson, editor, obstacles
 
 function drawTarget(matrix) {
 
@@ -42,7 +55,7 @@ function drawTarget(matrix) {
     root.add(axesHelper)
 
     // Draw the lines
-    const lineMat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 5.0 } );
+    const lineMat = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2.0 } );
     const points = []
     points.push(new THREE.Vector3(0, 0, 0))
     points.push(new THREE.Vector3(x, 0, 0))
@@ -60,6 +73,10 @@ function drawTarget(matrix) {
 
 }
 
+function updateArm(controls) {
+    arm.showColliders(controls.showColliders)
+}
+
 function updateTarget(controls) {
 
     let x = controls.x
@@ -73,8 +90,10 @@ function updateTarget(controls) {
 
     scene.remove(target)
     target = drawTarget(TARGET)
-    solver.target = TARGET
-    solver.resetParams()
+
+    let start = Date.now();
+    solver.solve(TARGET, 0.000001)
+    console.log(`Elapsed time: ${Date.now() - start}`)
 
 }
 
@@ -82,17 +101,39 @@ function updateArmJSON() {
 
     loadArmFromJSON(editor.get())
 
-    arm.arm.forEach((element) => scene.remove(element))
-    arm = new Arm3D(RADII, AXES, scene)
-    solver = new IKSolver3D(AXES, RADII, THETAS, ORIGIN)
-    solver.target = TARGET
-    solver.resetParams()
+    arm.cleanup()
+    collisionProvider = new CollisionProvider(armjson, obstacles)
+    arm = new Arm3D(armjson, scene, collisionProvider)
+    solver = new WasmSolver(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+    // solver = new IKSolver3D(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+    solver.solve(TARGET, 0.000001)
 
+}
+
+function initArmGUI() {
+
+    const container = document.getElementById("armgui")
+    armGUI = new GUI({ width: window.innerWidth / 8, container: container, title: "Arm Options" })
+
+    let controls = 
+    {   
+        "showColliders": true,
+        "toggleColliders": () => { 
+            controls.showColliders = !controls.showColliders 
+            updateArm(controls)
+        },
+        "resetArm" : () => {updateArmJSON(), updateArm(controls)}
+    }
+
+    armGUI.add( controls, 'toggleColliders')
+    armGUI.add( controls, 'resetArm')
+    armGUI.open()
 }
 
 function initTargetGUI() {
 
-    gui = new GUI({ width: window.innerWidth / 3, })
+    const container = document.getElementById("targetgui")
+    targetGUI = new GUI({ width: window.innerWidth / 4, container: container, title: "End Effector Controls" })
 
     let controls = 
     {   
@@ -101,19 +142,19 @@ function initTargetGUI() {
         z,
         xRot, 
         yRot, 
-        zRot
-    };
+        zRot,
+    }
 
-    gui.add( controls, 'x', -15, 15).onChange((value) => updateTarget(controls))
-    gui.add( controls, 'y', -15, 15).onChange(() => updateTarget(controls))
-    gui.add( controls, 'z', 0, 15).onChange(() => updateTarget(controls))
-    gui.add( controls, 'xRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
-    gui.add( controls, 'yRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
-    gui.add( controls, 'zRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
-    gui.open();
+    targetGUI.add( controls, 'x', -15, 15).onChange((value) => updateTarget(controls))
+    targetGUI.add( controls, 'y', -15, 15).onChange(() => updateTarget(controls))
+    targetGUI.add( controls, 'z', 0, 15).onChange(() => updateTarget(controls))
+    targetGUI.add( controls, 'xRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
+    targetGUI.add( controls, 'yRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
+    targetGUI.add( controls, 'zRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
+    targetGUI.open();
 }
 
-function initArmGUI() {
+function initJsonGUI() {
 
     // create the editor
     const container = document.getElementById("jsoneditor")
@@ -129,9 +170,18 @@ function initArmGUI() {
 }
 
 function loadArmFromJSON(json) {
-    RADII = json.arm.map((element) => element.link.length)
-    AXES = json.arm.map((element) => element.joint.axis)
-    THETAS = json.arm.map((element) => 0)
+
+    armjson = json
+
+    LENGTHS = armjson.arm.map((element) => element.link.length) // x
+    WIDTHS = armjson.arm.map((element) => element.link.width) // y
+    HEIGHTS = armjson.arm.map((element) => element.link.height) //z 
+    AXES = armjson.arm.map((element) => element.joint.axis)
+    MIN_ANGLES = armjson.arm.map((element) => element.joint.minAngle * Math.PI / 180)
+    MAX_ANGLES = armjson.arm.map((element) => element.joint.maxAngle * Math.PI / 180)
+
+    // Just start in the middle of the constraint values
+    THETAS = armjson.arm.map((element) => (element.joint.minAngle + element.joint.maxAngle) * Math.PI / 360)
 }
 
 function createGround() {
@@ -145,7 +195,7 @@ function createGround() {
     scene.add(groundMesh)
 }
 
-function init() {
+function initThree() {
 
     // grab canvas
     canvas = document.querySelector('#canvas');
@@ -216,8 +266,16 @@ function resizeRendererToDisplaySize(renderer) {
 async function render() {
 
     orbit.update()
-    solver.update()
+
+    if (solver.loss > 0.000001) {
+        solver.solve(TARGET, 0.000001)
+    }
+
+    // console.log(solver.getJoints())
     arm.updateMatrices(solver.getJoints())
+    arm.updateBoundingBoxPositions(solver._forwardMats)
+    arm.updateCollisionColors(solver._forwardMats)
+
 
     // fix buffer size
     if (resizeRendererToDisplaySize(renderer)) {
@@ -237,15 +295,50 @@ async function render() {
 
 }
 
-init()
+function generateObstacles() {
+
+    obstacles = []
+
+    function makeWall() {
+        const mat = new THREE.MeshPhongMaterial({
+            color: "#999999",
+            flatShading: true,
+        });
+
+        const length = 10
+        const width = 1
+        const height = 4
+
+        const geometry = new THREE.BoxGeometry(length, width, height)
+        geometry.translate(0, 0, height / 2) // change transform point to the bottom of the link
+        return new THREE.Mesh(geometry, mat)
+    }
+
+    let wall1 = makeWall()
+    wall1.geometry.translate(0, 7.5, 0)
+    obstacles.push(wall1)
+    scene.add(wall1)
+
+    let wall2 = makeWall()
+    wall2.geometry.translate(0, 7.5, 8)
+    obstacles.push(wall2)
+    scene.add(wall2)
+
+}
+
+await init() // initialize WASM package
+initThree()
 initTargetGUI()
+initJsonGUI()
 initArmGUI()
 createGround()
+generateObstacles()
 
-let arm = new Arm3D(RADII, AXES, scene)
-let solver = new IKSolver3D(AXES, RADII, THETAS, ORIGIN)
+let collisionProvider = new CollisionProvider(armjson, obstacles)
+let arm = new Arm3D(armjson, scene, collisionProvider)
+let solver = new WasmSolver(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+// let solver = new IKSolver3D(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+solver.solve(TARGET, 0.000001)
 let target = drawTarget(TARGET)
-solver.target = TARGET
-solver.initializeMomentums()
 
 requestAnimationFrame(render)

@@ -14,20 +14,30 @@
     <script type="importmap">
         {
           "imports": {
-            "three": "https://unpkg.com/three@0.146.0/build/three.module.js"
+            "three": "https://unpkg.com/three@0.146.0/build/three.module.js",
+            "SAT": "https://unpkg.com/sates6@1.0.0/src/SAT.js"
           }
         }
     </script>
     <link rel="stylesheet" href="static/css/index.css">
 </head>
 <body>
-    <script src="static/js/ArmJson.js" type="module"></script>
-    <script src="static/js/Geometry.js" type="module"></script>
-    <script src="static/js/Arm3D.js" type="module"></script>
-    <script src="static/js/Solver3D.js" type="module"></script>
+    <script src="static/js/util/ArmJson.js" type="module"></script>
+    <script src="static/js/util/Geometry.js" type="module"></script>
+    <script src="static/js/util/Arm3D.js" type="module"></script>
+    <script src="static/js/solver/WasmSolver.js" type="module"></script>
     <script src="static/js/main.js" type="module"></script>
 
     <canvas id="canvas" data-engine="three.js r146"></canvas>
-    <div id="jsoneditor" style="width: 400px; height: 400px; position: absolute; top: 0;"></div>
+
+    <div class="jsoneditor-container">
+      <div id="jsoneditor" class="jsoneditor"></div>
+    </div>
+
+    <div id="targetgui" class="targetgui"></div>
+
+    <div class="armgui-container">
+      <div id="armgui"></div>
+    </div>
 </body>
 </html>
