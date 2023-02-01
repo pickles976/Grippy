@@ -166,3 +166,17 @@ a {
     height: 100%;
     display: block;
  }
+
+
+ .lil-gui {
+  --name-width: 25%;
+  --font-size: 64;
+  --input-font-size: 64;
+}
+
+.targetgui {
+  position: absolute; 
+  --name-width: 10%;
+  top: 0; 
+  right: 0;
+}

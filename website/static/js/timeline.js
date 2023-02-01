@@ -1,4 +1,4 @@
-import { reDrawTarget, getTargetVector } from "./three.js";
+import { reDrawTarget, getTargetVector } from "./visualization.js";
 import { interpolateVectors, targetVecToMatrix } from "./util/Interpolation.js";
 
 var outlineContainer = document.getElementById('outline-container');
@@ -13,7 +13,7 @@ let interpolated = {}
 function generateModel() {
   let rows = [
     {
-      title: "Arm Control",
+      title: "Keyframes",
       selected: false,
       style: {
         height: 35

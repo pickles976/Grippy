@@ -2,8 +2,8 @@ import { rMat3D, tMat3D } from "./Geometry.js"
 
 /**
  * Create a Matrix from a twist vector
- * @param {} vec 
- * @returns 
+ * @param {Array} vec 
+ * @returns math matrix
  */
 export function targetVecToMatrix(vec) {
     let [x,y,z,xRot,yRot,zRot] = [...vec]
@@ -12,10 +12,10 @@ export function targetVecToMatrix(vec) {
 
 /**
  * Linearly interpolate two k-D vectors with n steps
- * @param {*} vi 
- * @param {*} vf 
- * @param {*} steps 
- * @returns 
+ * @param {Array} vi intial vector
+ * @param {Array} vf final vector
+ * @param {number} steps number of steps
+ * @returns {number[][]} Array of vectors
  */
 export function interpolateVectors(vi, vf, steps) {
 
