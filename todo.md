@@ -14,5 +14,10 @@
 - [x] Add other arm controls back in
 - [x] change to better arm
 - [x] add Jacobian transpose solver in
+
+- [ ] Make Rust solver solve from given thetas
+- [ ] Increase max number of cycles Rust solver
+- [ ] Solve with new thetas each time
+
 - [ ] Clean up code
 - [ ] Add CSV export
