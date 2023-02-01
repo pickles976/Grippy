@@ -1,3 +1,6 @@
+import { reDrawTarget, getTargetVector } from "./three.js";
+import { interpolateVectors, targetVecToMatrix } from "./util/Interpolation.js";
+
 var outlineContainer = document.getElementById('outline-container');
 
 let STEP = 50
@@ -49,8 +52,11 @@ var logDraggingMessage = function (object, eventName) {
 
 timeline.onTimeChanged(function (event) {
     let time = event.val
-    console.log(interpolated[time])
+    let vector = interpolated[time]
     // TODO: LOAD INTERPOLATED VALUES
+    if (vector != undefined) {
+        reDrawTarget(vector)
+    }
     showActivePositionInformation();
 });
 function showActivePositionInformation() {
@@ -149,7 +155,8 @@ export function addKeyframe() {
     // Add keyframe
     const currentModel = timeline.getModel();
 
-    let keyframe = { val: timeline.getTime(), id: index++, data: Math.random() * 1000 }
+    // let keyframe = { val: timeline.getTime(), id: index++, data: Math.random() * 1000 }
+    let keyframe = { val: timeline.getTime(), id: index++, data: getTargetVector()}
     currentModel.rows[0].keyframes.push(keyframe);
     timeline.setModel(currentModel);
     syncStorage()
@@ -208,7 +215,6 @@ function syncStorage() {
     keyframes = timeline.getModel().rows[0].keyframes
     sorted = sortKeyframes(keyframes)
     interpolated = interpolate(sorted)
-    console.log(interpolated)
 }
 
 function sortKeyframes() {
@@ -223,17 +229,18 @@ function interpolate(array) {
     let interpolated = {}
 
     for (let i = 0; i < array.length - 1; i++) {
-        let ki = array[i]
+
+        let ki = array[i] // get final and initial keyframes for a tween
         let kf = array[i + 1]
 
-        let dist = kf.val - ki.val // duration between keyframes
-        dist /= stepSize
+        let numSteps = kf.val - ki.val // duration between keyframes
+        numSteps /= stepSize // convert to the number of steps
 
-        let diff = kf.data - ki.data
-        let step = diff / dist
+        let tween = interpolateVectors(ki.data, kf.data, numSteps) // get the tween between two keyframes
 
-        for (let j = 0; j < dist; j++) {
-            interpolated[ki.val + (j * stepSize)] = ki.data + (step * j)
+        // load tweened values into interpolated object
+        for (let j = 0; j < numSteps; j++) {
+            interpolated[ki.val + (j * stepSize)] = tween[j]
         }
 
         interpolated[kf.val] = kf.data

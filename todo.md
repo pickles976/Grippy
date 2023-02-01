@@ -6,7 +6,9 @@
 - [x] Create object representing timeline keyframes
 - [x] Allow for timeline scrubbing and playback
 - [x] Add target and target controls
-- [ ] Add target interpolation to timeline controls
+- [x] Add target interpolation to timeline controls
+- [x] Draw target from vector on timeline change
 
 - [ ] Hook target interpolation up to arm
+- [ ] Add other arm controls back in
 - [ ] Add CSV export

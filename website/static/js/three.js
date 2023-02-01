@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { MapControls } from 'https://unpkg.com/three@0.146.0/examples/jsm/controls/OrbitControls.js'
 import { GUI } from 'https://unpkg.com/three@0.146.0/examples/jsm/libs/lil-gui.module.min.js'
-import { mathToTHREE, rMat3D, tMat3D } from './util/Geometry.js'
+import { mathToTHREE } from './util/Geometry.js'
+import { targetVecToMatrix } from './util/Interpolation.js';
 
 const ORIGIN = math.matrix([
     [1, 0, 0, 0],
@@ -10,17 +11,22 @@ const ORIGIN = math.matrix([
     [0, 0, 0, 1]
 ])
 
-const xRot = 0
-const yRot = 0
-const zRot = 0
 const x = 5
 const y = 5
 const z = 7
+const xRot = 0
+const yRot = 0
+const zRot = 0
 
 // Target matrix, target is target object, targetVec is target values for interpolating between
-let TARGET = math.multiply(math.multiply(math.multiply(tMat3D(x,y,z),rMat3D(xRot, 'x')), rMat3D(yRot, 'y')), rMat3D(zRot, 'z'))
+let targetVec = [x,y,z,xRot,yRot,zRot]
+let TARGET = targetVecToMatrix(targetVec)
 
-let canvas, renderer, camera, scene, orbit, targetGUI, armGUI, armjson, editor, obstacles, target, targetVec
+let canvas, renderer, camera, scene, orbit, targetGUI, armGUI, armjson, editor, obstacles, target
+
+export function getTargetVector() {
+    return targetVec
+}
 
 function initThree() {
 
@@ -118,12 +124,16 @@ function updateTarget(controls) {
     let yRot = controls.yRot
     let zRot = controls.zRot
 
-    TARGET = math.multiply(math.multiply(math.multiply(tMat3D(x,y,z),rMat3D(xRot, 'x')), rMat3D(yRot, 'y')), rMat3D(zRot, 'z'))
-
-    scene.remove(target)
-    target = drawTarget(TARGET)
     targetVec = [x,y,z,xRot,yRot,zRot]
 
+    reDrawTarget(targetVec)
+
+}
+
+export function reDrawTarget(targetVec) {
+    TARGET = targetVecToMatrix(targetVec)
+    scene.remove(target)
+    target = drawTarget(TARGET)
 }
 
 function initTargetGUI() {
@@ -198,5 +208,5 @@ initThree()
 initTargetGUI()
 createGround()
 target = drawTarget(TARGET)
-targetVec = [x,y,z,xRot,yRot,zRot]
 requestAnimationFrame(render)
+
