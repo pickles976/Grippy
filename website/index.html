@@ -1,55 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inverse Kinematics in the browser!</title>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L34TFHXD2P"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-L34TFHXD2P');
-    </script>
-
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.146.0/build/three.module.js",
-          "SAT": "https://unpkg.com/sates6@1.0.0/src/SAT.js"
-        }
-      }
-    </script>
-
-    <script src="https://pagecdn.io/lib/mathjs/11.0.1/math.min.js" crossorigin="anonymous"  ></script>
-    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.9.2/jsoneditor.min.css" rel="stylesheet" type="text/css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.9.2/jsoneditor.min.js"></script>
-
-    <link rel="stylesheet" href="static/css/index.css">
+  <title>Animation timeline demo</title>
+  <link rel="stylesheet" href="static/css/index.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" />
+  <script src="static/js/animation-timeline.js" module"></script>
 </head>
+
 <body>
-    <script src="static/js/util/ArmJson.js" type="module"></script>
-    <script src="static/js/util/Geometry.js" type="module"></script>
-    <script src="static/js/util/Arm3D.js" type="module"></script>
-    <script src="static/js/solver/WasmSolver.js" type="module"></script>
-    <script src="static/js/main.js" type="module"></script>
+  <div class="app-container">
 
-    <canvas id="canvas" data-engine="three.js r146"></canvas>
+    <main>
+      <aside></aside>
+      <div class="content">
+        <div id="currentTime"></div>
+        <div class="logs">
+          <div class="output" id="output1"></div>
+          <div class="output" id="output2"></div>
+        </div>
+      </div>
+    </main>
 
-    <div class="jsoneditor-container">
-      <div id="jsoneditor" class="jsoneditor"></div>
+
+    <div class="toolbar">
+      <button class="button mat-icon material-icons mat-icon-no-color" title="Timeline selection mode"
+        onclick="selectMode()">tab_unselected</button>
+      <button class="button mat-icon material-icons mat-icon-no-color"
+        title="Timeline pan mode with the keyframe selection." onclick="panMode(true)">pan_tool_alt</button>
+      <button class="button mat-icon material-icons mat-icon-no-color" title="Timeline pan mode non interactive"
+        onclick="panMode(false)">pan_tool</button>
+      <button class="button mat-icon material-icons mat-icon-no-color"
+        title="Timeline zoom mode. Also ctrl + scroll can be used." onclick="zoomMode()">search</button>
+      <button class="button mat-icon material-icons mat-icon-no-color" title="Only view mode."
+        onclick="noneMode()">visibility</button>
+      <div style="width: 1px; background: gray; height: 100%"></div>
+      <button class="button mat-icon material-icons mat-icon-no-color"
+        title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
+        onclick="onPlayClick()">
+        play_arrow
+      </button>
+      <button class="button mat-icon material-icons mat-icon-no-color"
+        title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
+        onclick="onPauseClick()">
+        pause
+      </button>
+      <div style="flex: 1"></div>
+      <button class="flex-left button mat-icon material-icons mat-icon-no-color" title="Remove selected keyframe"
+        onclick="removeKeyframe()">close</button>
+      <button class="flex-left button mat-icon material-icons mat-icon-no-color" title="Add new track with the keyframe"
+        onclick="addKeyframe()">add</button>
+      <div class="links">
+        <a class="git-hub-link" href="https://github.com/ievgennaida/animation-timeline-control">GitHub</a>
+      </div>
     </div>
 
-    <div id="targetgui" class="targetgui"></div>
+    <footer>
+      <div class="outline">
+        <div class="outline-header" id="outline-header"></div>
+        <div class="outline-scroll-container" id="outline-scroll-container" onwheel="outlineMouseWheel(arguments[0])">
+          <div class="outline-items" id="outline-container"></div>
+        </div>
+      </div>
+      <div id="timeline" class="timeline"></div>
+    </footer>
 
-    <div class="armgui-container">
-      <div id="armgui"></div>
-    </div>
+  </div>
+  <script src="static/js/main.js" module"></script>
 </body>
+
 </html>
