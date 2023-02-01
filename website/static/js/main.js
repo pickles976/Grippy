@@ -41,33 +41,33 @@ document.addEventListener('keydown', function (args) {
   }
 });
 var logMessage = function (message, logPanel = 1) {
-  if (message) {
-    let el = document.getElementById('output' + logPanel);
-    el.innerHTML = message + '<br/>' + el.innerHTML;
-  }
+//   if (message) {
+//     let el = document.getElementById('output' + logPanel);
+//     el.innerHTML = message + '<br/>' + el.innerHTML;
+//   }
 };
 
 var logDraggingMessage = function (object, eventName) {
-  if (object.elements) {
-    logMessage('Keyframe value: ' + object.elements[0].val + '. Selected (' + object.elements.length + ').' + eventName);
-  }
+//   if (object.elements) {
+//     logMessage('Keyframe value: ' + object.elements[0].val + '. Selected (' + object.elements.length + ').' + eventName);
+//   }
 };
 
 timeline.onTimeChanged(function (event) {
   showActivePositionInformation();
 });
 function showActivePositionInformation() {
-  if (timeline) {
-    const fromPx = timeline.scrollLeft;
-    const toPx = timeline.scrollLeft + timeline.getClientWidth();
-    const fromMs = timeline.pxToVal(fromPx - timeline._leftMargin());
-    const toMs = timeline.pxToVal(toPx - timeline._leftMargin());
-    let positionInPixels = timeline.valToPx(timeline.getTime()) + timeline._leftMargin();
-    let message = 'Timeline in ms: ' + timeline.getTime() + 'ms. Displayed from:' + fromMs.toFixed() + 'ms to: ' + toMs.toFixed() + 'ms.';
-    message += '<br>';
-    message += 'Timeline in px: ' + positionInPixels + 'px. Displayed from: ' + fromPx + 'px to: ' + toPx + 'px';
-    document.getElementById('currentTime').innerHTML = message;
-  }
+//   if (timeline) {
+//     const fromPx = timeline.scrollLeft;
+//     const toPx = timeline.scrollLeft + timeline.getClientWidth();
+//     const fromMs = timeline.pxToVal(fromPx - timeline._leftMargin());
+//     const toMs = timeline.pxToVal(toPx - timeline._leftMargin());
+//     let positionInPixels = timeline.valToPx(timeline.getTime()) + timeline._leftMargin();
+//     let message = 'Timeline in ms: ' + timeline.getTime() + 'ms. Displayed from:' + fromMs.toFixed() + 'ms to: ' + toMs.toFixed() + 'ms.';
+//     message += '<br>';
+//     message += 'Timeline in px: ' + positionInPixels + 'px. Displayed from: ' + fromPx + 'px to: ' + toPx + 'px';
+//     document.getElementById('currentTime').innerHTML = message;
+//   }
 }
 timeline.onSelected(function (obj) {
   logMessage('Selected Event: (' + obj.selected.length + '). changed selection :' + obj.changed.length, 2);
@@ -162,7 +162,7 @@ function removeKeyframe() {
     timeline.setModel(currentModel);
   }
 }
-function addKeyframe() {
+export function addKeyframe() {
   if (timeline) {
     // Add keyframe
     const currentModel = timeline.getModel();
@@ -187,10 +187,10 @@ function outlineMouseWheel(event) {
     this.timeline._handleWheelEvent(event);
   }
 }
-playing = false;
-playStep = 50;
+let playing = false;
+let playStep = 50;
 // Automatic tracking should be turned off when user interaction happened.
-trackTimelineMovement = false;
+let trackTimelineMovement = false;
 function onPlayClick(event) {
   playing = true;
   trackTimelineMovement = true;
@@ -238,3 +238,6 @@ function initPlayer() {
 initPlayer();
 showActivePositionInformation();
 window.onresize = showActivePositionInformation;
+
+document.getElementById("addKeyFrame").addEventListener('click', addKeyframe)
+document.getElementById("removeKeyFrame").addEventListener('click', removeKeyframe)

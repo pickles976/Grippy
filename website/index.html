@@ -3,23 +3,28 @@
 
 <head>
   <title>Animation timeline demo</title>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.146.0/build/three.module.js",
+        "SAT": "https://unpkg.com/sates6@1.0.0/src/SAT.js"
+      }
+    }
+  </script>
+
   <link rel="stylesheet" href="static/css/index.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" />
-  <script src="static/js/animation-timeline.js" module"></script>
+  <script src="static/js/animation-timeline.js" type="module"></script>
+  <script src="static/js/three.js" type="module"></script>
+  <script src="static/js/main.js" type="module"></script>
 </head>
 
 <body>
   <div class="app-container">
 
     <main>
-      <aside></aside>
-      <div class="content">
-        <div id="currentTime"></div>
-        <div class="logs">
-          <div class="output" id="output1"></div>
-          <div class="output" id="output2"></div>
-        </div>
-      </div>
+        <canvas id="canvas" data-engine="three.js r146"></canvas>
     </main>
 
 
@@ -47,9 +52,9 @@
       </button>
       <div style="flex: 1"></div>
       <button class="flex-left button mat-icon material-icons mat-icon-no-color" title="Remove selected keyframe"
-        onclick="removeKeyframe()">close</button>
-      <button class="flex-left button mat-icon material-icons mat-icon-no-color" title="Add new track with the keyframe"
-        onclick="addKeyframe()">add</button>
+        id="removeKeyFrame">close</button>
+      <button id="addKeyFrame" class="flex-left button mat-icon material-icons mat-icon-no-color" title="Add new track with the keyframe"
+        >add</button>
       <div class="links">
         <a class="git-hub-link" href="https://github.com/ievgennaida/animation-timeline-control">GitHub</a>
       </div>
@@ -66,7 +71,6 @@
     </footer>
 
   </div>
-  <script src="static/js/main.js" module"></script>
 </body>
 
 </html>
