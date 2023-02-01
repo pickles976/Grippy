@@ -167,7 +167,6 @@ a {
     display: block;
  }
 
-
  .lil-gui {
   --name-width: 25%;
   --font-size: 64;
@@ -179,4 +178,19 @@ a {
   --name-width: 10%;
   top: 0; 
   right: 0;
+}
+
+.armgui {
+  position: absolute; 
+  display: flex;
+  top: 50%; 
+  right: 0%;
+  justify-content: center;
+}
+
+.jsoneditor-container {
+  width: 20%;
+  height: 40%;
+  position: absolute; 
+  top: 0;
 }

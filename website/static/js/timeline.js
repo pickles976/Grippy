@@ -3,7 +3,7 @@ import { interpolateVectors, targetVecToMatrix } from "./util/Interpolation.js";
 
 var outlineContainer = document.getElementById('outline-container');
 
-let STEP = 50
+let STEP = 25
 let index = 0
 let keyframes = {}
 let sorted = {}

@@ -3,6 +3,12 @@ import { MapControls } from 'https://unpkg.com/three@0.146.0/examples/jsm/contro
 import { GUI } from 'https://unpkg.com/three@0.146.0/examples/jsm/libs/lil-gui.module.min.js'
 import { mathToTHREE } from './util/Geometry.js'
 import { targetVecToMatrix } from './util/Interpolation.js';
+import { WasmSolver } from './solvers/WasmSolver.js'
+import { Arm3D } from './util/Arm3D.js'
+import { ArmJson } from './util/ArmJson.js'
+import { CollisionProvider } from './util/CollisionProvider.js'
+import init from "../pkg/krust.js";
+import { IKSolverJC } from './solvers/SolverJC.js';
 
 const ORIGIN = math.matrix([
     [1, 0, 0, 0],
@@ -23,6 +29,14 @@ let targetVec = [x,y,z,xRot,yRot,zRot]
 let TARGET = targetVecToMatrix(targetVec)
 
 let canvas, renderer, camera, scene, orbit, targetGUI, armGUI, armjson, editor, obstacles, target
+
+let LENGTHS = []
+let WIDTHS = []
+let HEIGHTS = []
+let AXES = []
+let THETAS = []
+let MIN_ANGLES = []
+let MAX_ANGLES = []
 
 export function getTargetVector() {
     return targetVec
@@ -115,25 +129,40 @@ function drawTarget(matrix) {
     return root
 }
 
-function updateTarget(controls) {
+function updateArm(controls) {
+    arm.showColliders(controls.showColliders)
+}
 
-    let x = controls.x
-    let y = controls.y
-    let z = controls.z
-    let xRot = controls.xRot
-    let yRot = controls.yRot
-    let zRot = controls.zRot
+function updateArmJSON() {
 
-    targetVec = [x,y,z,xRot,yRot,zRot]
+    loadArmFromJSON(editor.get())
 
-    reDrawTarget(targetVec)
+    arm.cleanup()
+    collisionProvider = new CollisionProvider(armjson, obstacles)
+    arm = new Arm3D(armjson, scene, collisionProvider)
+    solver = new WasmSolver(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+    solver.solve(TARGET, 0.00001)
 
 }
 
-export function reDrawTarget(targetVec) {
-    TARGET = targetVecToMatrix(targetVec)
-    scene.remove(target)
-    target = drawTarget(TARGET)
+function initArmGUI() {
+
+    const container = document.getElementById("armgui")
+    armGUI = new GUI({ width: window.innerWidth / 8, container: container, title: "Arm Options" })
+
+    let controls = 
+    {   
+        "showColliders": true,
+        "toggleColliders": () => { 
+            controls.showColliders = !controls.showColliders 
+            updateArm(controls)
+        },
+        "resetArm" : () => {updateArmJSON(), updateArm(controls)}
+    }
+
+    armGUI.add( controls, 'toggleColliders')
+    armGUI.add( controls, 'resetArm')
+    armGUI.open()
 }
 
 function initTargetGUI() {
@@ -158,6 +187,57 @@ function initTargetGUI() {
     targetGUI.add( controls, 'yRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
     targetGUI.add( controls, 'zRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
     targetGUI.open();
+}
+
+function initJsonGUI() {
+
+    // create the editor
+    const container = document.getElementById("jsoneditor")
+    const options = { onChange: updateArmJSON }
+    editor = new JSONEditor(container, options)
+
+    editor.set(ArmJson)
+
+    // get json
+    armjson = editor.get()
+
+    loadArmFromJSON(armjson)
+}
+
+function loadArmFromJSON(json) {
+
+    armjson = json
+
+    LENGTHS = armjson.arm.map((element) => element.link.length) // x
+    WIDTHS = armjson.arm.map((element) => element.link.width) // y
+    HEIGHTS = armjson.arm.map((element) => element.link.height) //z 
+    AXES = armjson.arm.map((element) => element.joint.axis)
+    MIN_ANGLES = armjson.arm.map((element) => element.joint.minAngle * Math.PI / 180)
+    MAX_ANGLES = armjson.arm.map((element) => element.joint.maxAngle * Math.PI / 180)
+
+    // Just start in the middle of the constraint values
+    THETAS = armjson.arm.map((element) => (element.joint.minAngle + element.joint.maxAngle) * Math.PI / 360)
+}
+
+function updateTarget(controls) {
+
+    let x = controls.x
+    let y = controls.y
+    let z = controls.z
+    let xRot = controls.xRot
+    let yRot = controls.yRot
+    let zRot = controls.zRot
+
+    targetVec = [x,y,z,xRot,yRot,zRot]
+
+    reDrawTarget(targetVec)
+
+}
+
+export function reDrawTarget(targetVec) {
+    TARGET = targetVecToMatrix(targetVec)
+    scene.remove(target)
+    target = drawTarget(TARGET)
 }
 
 function createGround() {
@@ -186,6 +266,16 @@ async function render() {
 
     orbit.update()
 
+    if (solver.loss > 0.00001) {
+        solver.thetas = THETAS
+        solver.solve(TARGET, 0.00001)
+    }
+
+    // console.log(solver.getJoints())
+    arm.updateMatrices(solver.getJoints())
+    arm.updateBoundingBoxPositions(solver._forwardMats)
+    arm.updateCollisionColors(solver._forwardMats)
+
     // fix buffer size
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -204,9 +294,21 @@ async function render() {
 
 }
 
+await init() // initialize WASM package
 initThree()
 initTargetGUI()
+initJsonGUI()
+initArmGUI()
 createGround()
+
+loadArmFromJSON(ArmJson)
+
 target = drawTarget(TARGET)
+obstacles = []
+
+let collisionProvider = new CollisionProvider(armjson, obstacles)
+let arm = new Arm3D(armjson, scene, collisionProvider)
+let solver = new WasmSolver(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
+
 requestAnimationFrame(render)
 

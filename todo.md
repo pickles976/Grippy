@@ -9,6 +9,10 @@
 - [x] Add target interpolation to timeline controls
 - [x] Draw target from vector on timeline change
 
-- [ ] Hook target interpolation up to arm
-- [ ] Add other arm controls back in
+- [x] Add arm visualization back into app
+- [x] Hook target interpolation up to arm
+- [x] Add other arm controls back in
+- [x] change to better arm
+- [x] add Jacobian transpose solver in
+- [ ] Clean up code
 - [ ] Add CSV export

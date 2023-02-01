@@ -18,8 +18,12 @@
       rel="stylesheet"
     />
     <script src="https://pagecdn.io/lib/mathjs/11.0.1/math.min.js" crossorigin="anonymous"  ></script>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 
-    <script src="static/js/animation-timeline.js" type="module"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.9.2/jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.9.2/jsoneditor.min.js"></script>
+
+    <script src="static/js/mod/animation-timeline.js" type="module"></script>
     <script src="static/js/visualization.js" type="module"></script>
     <script src="static/js/timeline.js" type="module"></script>
   </head>
@@ -28,6 +32,13 @@
     <div class="app-container">
       <main>
         <canvas id="canvas" data-engine="three.js r146"></canvas>
+        <div class="jsoneditor-container">
+          <div id="jsoneditor" class="jsoneditor"></div>
+        </div>
+    
+        <div id="targetgui" class="targetgui"></div>
+    
+        <div id="armgui" class="armgui"></div>
       </main>
 
       <div class="toolbar">
