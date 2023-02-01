@@ -1,7 +1,10 @@
 var outlineContainer = document.getElementById('outline-container');
 
+let STEP = 50
 let index = 0
-let storage = {}
+let keyframes = {}
+let sorted = {}
+let interpolated = {}
 
 // Generate and initialize the model
 function generateModel() {
@@ -45,9 +48,10 @@ var logDraggingMessage = function (object, eventName) {
 };
 
 timeline.onTimeChanged(function (event) {
-    // console.log(event)
+    let time = event.val
+    console.log(interpolated[time])
     // TODO: LOAD INTERPOLATED VALUES
-  showActivePositionInformation();
+    showActivePositionInformation();
 });
 function showActivePositionInformation() {
 //   if (timeline) {
@@ -63,29 +67,29 @@ function showActivePositionInformation() {
 //   }
 }
 
-timeline.onSelected(function (obj) {
-  logMessage('Selected Event: (' + obj.selected.length + '). changed selection :' + obj.changed.length, 2);
-});
-timeline.onDragStarted(function (obj) {
-  logDraggingMessage(obj, 'dragstarted');
-});
-timeline.onDrag(function (obj) {
-  logDraggingMessage(obj, 'drag');
-});
-timeline.onKeyframeChanged(function (obj) {
-  console.log('keyframe: ' + obj.val);
-});
+// timeline.onSelected(function (obj) {
+//   logMessage('Selected Event: (' + obj.selected.length + '). changed selection :' + obj.changed.length, 2);
+// });
+// timeline.onDragStarted(function (obj) {
+//   logDraggingMessage(obj, 'dragstarted');
+// });
+// timeline.onDrag(function (obj) {
+//   logDraggingMessage(obj, 'drag');
+// });
+// timeline.onKeyframeChanged(function (obj) {
+//   console.log('keyframe: ' + obj.val);
+// });
 timeline.onDragFinished(function (obj) {
-  logDraggingMessage(obj, 'dragfinished');
+  syncStorage()
 });
-timeline.onMouseDown(function (obj) {
-  var type = obj.target ? obj.target.type : '';
-  logMessage('mousedown:' + obj.val + '.  target:' + type + '. ' + Math.floor(obj.pos.x) + 'x' + Math.floor(obj.pos.y), 2);
-});
-timeline.onDoubleClick(function (obj) {
-  var type = obj.target ? obj.target.type : '';
-  logMessage('doubleclick:' + obj.val + '.  target:' + type + '. ' + Math.floor(obj.pos.x) + 'x' + Math.floor(obj.pos.y), 2);
-});
+// timeline.onMouseDown(function (obj) {
+//   var type = obj.target ? obj.target.type : '';
+//   logMessage('mousedown:' + obj.val + '.  target:' + type + '. ' + Math.floor(obj.pos.x) + 'x' + Math.floor(obj.pos.y), 2);
+// });
+// timeline.onDoubleClick(function (obj) {
+//   var type = obj.target ? obj.target.type : '';
+//   logMessage('doubleclick:' + obj.val + '.  target:' + type + '. ' + Math.floor(obj.pos.x) + 'x' + Math.floor(obj.pos.y), 2);
+// });
 
 timeline.onScroll(function (obj) {
   var options = timeline.getOptions();
@@ -153,14 +157,14 @@ export function addKeyframe() {
 }
 
 let playing = false;
-let playStep = 50;
+let playStep = STEP;
 // Automatic tracking should be turned off when user interaction happened.
 let trackTimelineMovement = false;
 function onPlayClick(event) {
   playing = true;
   trackTimelineMovement = true;
   if (timeline) {
-    this.moveTimelineIntoTheBounds();
+    moveTimelineIntoTheBounds();
     // Don't allow to manipulate timeline during playing (optional).
     timeline.setOptions({ timelineDraggable: false });
   }
@@ -199,9 +203,45 @@ function initPlayer() {
   }, playStep);
 }
 
+// interpolation functions
 function syncStorage() {
-    storage = timeline.getModel()
-    console.log(storage)
+    keyframes = timeline.getModel().rows[0].keyframes
+    sorted = sortKeyframes(keyframes)
+    interpolated = interpolate(sorted)
+    console.log(interpolated)
+}
+
+function sortKeyframes() {
+    let array = keyframes.map((keyframe) => keyframe)
+    array = array.sort((a, b) => a.val - b.val)
+    return array
+}
+
+function interpolate(array) { 
+
+    let stepSize = STEP
+    let interpolated = {}
+
+    for (let i = 0; i < array.length - 1; i++) {
+        let ki = array[i]
+        let kf = array[i + 1]
+
+        let dist = kf.val - ki.val // duration between keyframes
+        dist /= stepSize
+
+        let diff = kf.data - ki.data
+        let step = diff / dist
+
+        for (let j = 0; j < dist; j++) {
+            interpolated[ki.val + (j * stepSize)] = ki.data + (step * j)
+        }
+
+        interpolated[kf.val] = kf.data
+
+    }
+
+    return interpolated
+
 }
 
 // Note: this can be any other player: audio, video, svg and etc.
