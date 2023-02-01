@@ -1,7 +1,9 @@
 var outlineContainer = document.getElementById('outline-container');
 
 let index = 0
+let storage = {}
 
+// Generate and initialize the model
 function generateModel() {
   let rows = [
     {
@@ -11,26 +13,14 @@ function generateModel() {
         height: 35
       },
       keyframes: [
-        {
-          style:{
-            cursor: 'default',
-          },
-          val: 2000,
-        },
-        {
-          val: 2500,
-        },
-        {
-          val: 2600,
-        },
       ],
     }
   ];
   return rows;
 }
+
 const rows = generateModel();
-var timeline = new timelineModule.Timeline();
-timeline.initialize({ id: 'timeline', headerHeight: 45 });
+var timeline = new timelineModule.Timeline({ id: 'timeline', headerHeight: 45 });
 timeline.setModel({ rows: rows });
 
 // Select all elements on key down
@@ -40,6 +30,7 @@ document.addEventListener('keydown', function (args) {
     args.preventDefault();
   }
 });
+
 var logMessage = function (message, logPanel = 1) {
 //   if (message) {
 //     let el = document.getElementById('output' + logPanel);
@@ -54,6 +45,8 @@ var logDraggingMessage = function (object, eventName) {
 };
 
 timeline.onTimeChanged(function (event) {
+    // console.log(event)
+    // TODO: LOAD INTERPOLATED VALUES
   showActivePositionInformation();
 });
 function showActivePositionInformation() {
@@ -69,6 +62,7 @@ function showActivePositionInformation() {
 //     document.getElementById('currentTime').innerHTML = message;
 //   }
 }
+
 timeline.onSelected(function (obj) {
   logMessage('Selected Event: (' + obj.selected.length + '). changed selection :' + obj.changed.length, 2);
 });
@@ -130,23 +124,6 @@ function generateHTMLOutlineListNodes(rows) {
   });
 }
 
-/*Handle events from html page*/
-function selectMode() {
-  if (timeline) {
-    timeline.setInteractionMode('selector');
-  }
-}
-function zoomMode() {
-  if (timeline) {
-    timeline.setInteractionMode('zoom');
-  }
-}
-function noneMode() {
-  if (timeline) {
-    timeline.setInteractionMode('none');
-  }
-}
-
 function removeKeyframe() {
   if (timeline) {
     // Add keyframe
@@ -160,6 +137,7 @@ function removeKeyframe() {
     }
 
     timeline.setModel(currentModel);
+    syncStorage()
   }
 }
 export function addKeyframe() {
@@ -167,26 +145,13 @@ export function addKeyframe() {
     // Add keyframe
     const currentModel = timeline.getModel();
 
-    let keyframe = { val: timeline.getTime(), id: index++, data: 210 }
-    console.log(currentModel)
+    let keyframe = { val: timeline.getTime(), id: index++, data: Math.random() * 1000 }
     currentModel.rows[0].keyframes.push(keyframe);
     timeline.setModel(currentModel);
+    syncStorage()
+  }
+}
 
-    // Generate outline list menu
-    // generateHTMLOutlineListNodes(currentModel.rows);
-  }
-}
-function panMode(interactive) {
-  if (timeline) {
-    timeline.setInteractionMode(interactive ? 'pan' : 'nonInteractivePan');
-  }
-}
-// Set scroll back to timeline when mouse scroll over the outline
-function outlineMouseWheel(event) {
-  if (timeline) {
-    this.timeline._handleWheelEvent(event);
-  }
-}
 let playing = false;
 let playStep = 50;
 // Automatic tracking should be turned off when user interaction happened.
@@ -233,11 +198,19 @@ function initPlayer() {
     }
   }, playStep);
 }
+
+function syncStorage() {
+    storage = timeline.getModel()
+    console.log(storage)
+}
+
 // Note: this can be any other player: audio, video, svg and etc.
 // In this case you have to synchronize events of the component and player.
 initPlayer();
 showActivePositionInformation();
 window.onresize = showActivePositionInformation;
 
+document.getElementById("onPlayClick").addEventListener('click', onPlayClick)
+document.getElementById("onPauseClick").addEventListener('click', onPauseClick)
 document.getElementById("addKeyFrame").addEventListener('click', addKeyframe)
 document.getElementById("removeKeyFrame").addEventListener('click', removeKeyframe)

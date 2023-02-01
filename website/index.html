@@ -1,76 +1,86 @@
 <!DOCTYPE html>
 <html lang="en-US">
+  <head>
+    <title>Animation timeline demo</title>
 
-<head>
-  <title>Animation timeline demo</title>
-
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.146.0/build/three.module.js",
-        "SAT": "https://unpkg.com/sates6@1.0.0/src/SAT.js"
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.146.0/build/three.module.js",
+          "SAT": "https://unpkg.com/sates6@1.0.0/src/SAT.js"
+        }
       }
-    }
-  </script>
+    </script>
 
-  <link rel="stylesheet" href="static/css/index.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" />
-  <script src="static/js/animation-timeline.js" type="module"></script>
-  <script src="static/js/three.js" type="module"></script>
-  <script src="static/js/main.js" type="module"></script>
-</head>
+    <link rel="stylesheet" href="static/css/index.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block"
+      rel="stylesheet"
+    />
+    <script src="static/js/animation-timeline.js" type="module"></script>
+    <script src="static/js/three.js" type="module"></script>
+    <script src="static/js/main.js" type="module"></script>
+  </head>
 
-<body>
-  <div class="app-container">
-
-    <main>
+  <body>
+    <div class="app-container">
+      <main>
         <canvas id="canvas" data-engine="three.js r146"></canvas>
-    </main>
+      </main>
 
-
-    <div class="toolbar">
-      <button class="button mat-icon material-icons mat-icon-no-color" title="Timeline selection mode"
-        onclick="selectMode()">tab_unselected</button>
-      <button class="button mat-icon material-icons mat-icon-no-color"
-        title="Timeline pan mode with the keyframe selection." onclick="panMode(true)">pan_tool_alt</button>
-      <button class="button mat-icon material-icons mat-icon-no-color" title="Timeline pan mode non interactive"
-        onclick="panMode(false)">pan_tool</button>
-      <button class="button mat-icon material-icons mat-icon-no-color"
-        title="Timeline zoom mode. Also ctrl + scroll can be used." onclick="zoomMode()">search</button>
-      <button class="button mat-icon material-icons mat-icon-no-color" title="Only view mode."
-        onclick="noneMode()">visibility</button>
-      <div style="width: 1px; background: gray; height: 100%"></div>
-      <button class="button mat-icon material-icons mat-icon-no-color"
-        title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
-        onclick="onPlayClick()">
-        play_arrow
-      </button>
-      <button class="button mat-icon material-icons mat-icon-no-color"
-        title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
-        onclick="onPauseClick()">
-        pause
-      </button>
-      <div style="flex: 1"></div>
-      <button class="flex-left button mat-icon material-icons mat-icon-no-color" title="Remove selected keyframe"
-        id="removeKeyFrame">close</button>
-      <button id="addKeyFrame" class="flex-left button mat-icon material-icons mat-icon-no-color" title="Add new track with the keyframe"
-        >add</button>
-      <div class="links">
-        <a class="git-hub-link" href="https://github.com/ievgennaida/animation-timeline-control">GitHub</a>
-      </div>
-    </div>
-
-    <footer>
-      <div class="outline">
-        <div class="outline-header" id="outline-header"></div>
-        <div class="outline-scroll-container" id="outline-scroll-container" onwheel="outlineMouseWheel(arguments[0])">
-          <div class="outline-items" id="outline-container"></div>
+      <div class="toolbar">
+        <button
+          class="flex-left button mat-icon material-icons mat-icon-no-color"
+          title="Remove selected keyframe"
+          id="removeKeyFrame"
+        >
+          close
+        </button>
+        <button
+          id="addKeyFrame"
+          class="flex-left button mat-icon material-icons mat-icon-no-color"
+          title="Add new track with the keyframe"
+        >
+          add
+        </button>
+        <div style="width: 1px; background: gray; height: 100%"></div>
+        <button
+          class="button mat-icon material-icons mat-icon-no-color"
+          title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
+          id="onPlayClick"
+        >
+          play_arrow
+        </button>
+        <button
+          class="button mat-icon material-icons mat-icon-no-color"
+          title="Use external player to play\stop the timeline. For the demo simple setInterval is used."
+          id="onPauseClick"
+        >
+          pause
+        </button>
+        <div style="flex: 1"></div>
+        <div class="links">
+          <a
+            class="git-hub-link"
+            href="https://github.com/ievgennaida/animation-timeline-control"
+            >GitHub</a
+          >
         </div>
       </div>
-      <div id="timeline" class="timeline"></div>
-    </footer>
 
-  </div>
-</body>
-
+      <footer>
+        <div class="outline">
+          <div class="outline-header" id="outline-header"></div>
+          <div
+            class="outline-scroll-container"
+            id="outline-scroll-container"
+            onwheel="outlineMouseWheel(arguments[0])"
+          >
+            <div class="outline-items" id="outline-container"></div>
+          </div>
+        </div>
+        <div id="timeline" class="timeline"></div>
+      </footer>
+    </div>
+  </body>
 </html>

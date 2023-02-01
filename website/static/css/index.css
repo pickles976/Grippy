@@ -154,6 +154,7 @@ a {
 
 .scroll-container {
     overflow-y: hidden !important;
+    /* position: fixed !important; */
 }
 
 .scene-container {
