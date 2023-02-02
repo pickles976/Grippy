@@ -1,0 +1,7 @@
+{
+    "dependencies": {},
+    "scripts" : {
+      "start": "http-server .",
+      "deploy": "aws s3 sync . s3://grippy.app/ && aws s3 sync . s3://www.grippy.app/"
+    }
+  }
