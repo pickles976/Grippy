@@ -10,6 +10,8 @@ import { CollisionProvider } from './util/CollisionProvider.js'
 import init from "../pkg/krust.js";
 import { IKSolverJC } from './solvers/SolverJC.js';
 
+let MAX_STEPS = 45
+
 const ORIGIN = math.matrix([
     [1, 0, 0, 0],
     [0, 1, 0, 0],
@@ -141,7 +143,8 @@ function updateArmJSON() {
     collisionProvider = new CollisionProvider(armjson, obstacles)
     arm = new Arm3D(armjson, scene, collisionProvider)
     solver = new WasmSolver(AXES, LENGTHS, THETAS, ORIGIN, MIN_ANGLES, MAX_ANGLES, collisionProvider)
-    solver.solve(TARGET, 0.00001)
+    // solver.solve(TARGET, 0.00001)
+    solver.solve_with_conditions(TARGET, 0.00001, THETAS, 50)
 
 }
 
@@ -180,7 +183,7 @@ function initTargetGUI() {
         zRot,
     }
 
-    targetGUI.add( controls, 'x', -15, 15).onChange((value) => updateTarget(controls))
+    targetGUI.add( controls, 'x', -15, 15).onChange(() => updateTarget(controls))
     targetGUI.add( controls, 'y', -15, 15).onChange(() => updateTarget(controls))
     targetGUI.add( controls, 'z', 0, 15).onChange(() => updateTarget(controls))
     targetGUI.add( controls, 'xRot', -Math.PI, Math.PI).onChange(() => updateTarget(controls))
@@ -236,8 +239,13 @@ function updateTarget(controls) {
 
 export function reDrawTarget(targetVec) {
     TARGET = targetVecToMatrix(targetVec)
+    console.log(TARGET)
     scene.remove(target)
     target = drawTarget(TARGET)
+
+    let start = Date.now()
+    solver.solve_with_conditions(TARGET, 0.00001, THETAS, MAX_STEPS)
+    console.log(`Elapsed: ${Date.now() - start}`)
 }
 
 function createGround() {
@@ -267,8 +275,8 @@ async function render() {
     orbit.update()
 
     if (solver.loss > 0.00001) {
-        solver.thetas = THETAS
-        solver.solve(TARGET, 0.00001)
+        solver.solve_with_conditions(TARGET, 0.00001, solver._thetas, 15)
+        // solver.solve(TARGET, 0.00001)
     }
 
     // console.log(solver.getJoints())

@@ -7,6 +7,15 @@ import { rMat3D, tMat3D } from "./Geometry.js"
  */
 export function targetVecToMatrix(vec) {
     let [x,y,z,xRot,yRot,zRot] = [...vec]
+
+    if (x < 0.5 && x >= 0) {
+        x = 0.5
+    } else if (x <= 0 && x > -0.5) {
+        x = -0.5
+    }
+
+
+
     return math.multiply(math.multiply(math.multiply(tMat3D(x,y,z),rMat3D(xRot, 'x')), rMat3D(yRot, 'y')), rMat3D(zRot, 'z'))
 }
 

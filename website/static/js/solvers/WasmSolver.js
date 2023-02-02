@@ -32,7 +32,14 @@ export class WasmSolver extends Solver {
         this.target = target
         this._thetas = JSON.parse(this.wasm_solver.solve(JSON.stringify(matrixToWasm(target)),  thresh))
         super.generateMats()
-        super._calculateLoss(this._endEffector)
+        this.loss = super._calculateLoss(this._endEffector)
+    }
+
+    solve_with_conditions(target, thresh, thetas, steps) {
+        this.target = target
+        this._thetas = JSON.parse(this.wasm_solver.solve_with_conditions(JSON.stringify(matrixToWasm(target)),  thresh, thetas, steps))
+        super.generateMats()
+        this.loss = super._calculateLoss(this._endEffector)
     }
 
     getJoints() {
